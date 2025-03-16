@@ -12,10 +12,10 @@ export default async function ProtectedPage() {
 
 
 
-  if (!user) {
-    return redirect("/sign-in");
-  }
-  supabase.auth.signOut();
+  // if (!user) {
+  //   return redirect("/sign-in");
+  // }
+  // supabase.auth.signOut();
 
   return (
     <div className="flex-1 w-full flex flex-col gap-12">
