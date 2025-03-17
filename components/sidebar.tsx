@@ -28,11 +28,11 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Analytics", href: "/analytics", icon: BarChart2 },
   { name: "Organization", href: "/organization", icon: Building2 },
-  { name: "Projects", href: "/projects", icon: Folder },
+  { name: "Products", href: "/products", icon: Folder },
   { name: "Transactions", href: "/transactions", icon: Wallet },
   { name: "Invoices", href: "/invoices", icon: Receipt },
-  { name: "Payments", href: "/payments", icon: CreditCard },
-  { name: "Members", href: "/members", icon: Users2 },
+  { name: "Sale", href: "/sale", icon: CreditCard },
+  { name: "Consummers", href: "/consummer ", icon: Users2 },
   { name: "Permissions", href: "/permissions", icon: Shield },
   { name: "Chat", href: "/chat", icon: MessagesSquare },
   { name: "Meetings", href: "/meetings", icon: Video },
@@ -48,7 +48,7 @@ export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
-  const NavItem = ({ item, isBottom = false }) => (
+  const NavItem = ({ item, isBottom = false }: { item: { name: string; href: string; icon: React.ComponentType<any> }; isBottom?: boolean }) => (
     <Tooltip delayDuration={0}>
       <TooltipTrigger asChild>
         <Link

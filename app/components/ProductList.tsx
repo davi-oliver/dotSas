@@ -1,0 +1,1079 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import {
+  ArrowDownAZ,
+  ArrowUpAZ,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  Eye,
+  Filter,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
+import { useMediaQuery } from "@/hooks/use-mobile"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+
+// Tipos
+interface ProductImage {
+  id: string
+  url: string
+  isMain: boolean
+}
+
+interface ProductVariant {
+  id: string
+  attribute: string
+  value: string
+  price: number
+  stock: number
+}
+
+interface Product {
+  id: string
+  name: string
+  sku: string
+  description: string
+  price: number
+  promotionalPrice?: number
+  category: string
+  brand?: string
+  stock: number
+  minStock?: number
+  status: boolean
+  featured: boolean
+  images: ProductImage[]
+  variants?: ProductVariant[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+// Dados de exemplo
+const EXAMPLE_PRODUCTS: Product[] = [
+  {
+    id: "PROD-001",
+    name: "Smartphone Galaxy S23",
+    sku: "SAMS-S23-BLK",
+    description: "Smartphone Samsung Galaxy S23 com 256GB de armazenamento",
+    price: 4999.9,
+    promotionalPrice: 4499.9,
+    category: "eletronicos",
+    brand: "Samsung",
+    stock: 15,
+    minStock: 5,
+    status: true,
+    featured: true,
+    images: [
+      { id: "IMG-001", url: "/placeholder.svg?height=80&width=80", isMain: true },
+      { id: "IMG-002", url: "/placeholder.svg?height=80&width=80", isMain: false },
+    ],
+    variants: [
+      { id: "VAR-001", attribute: "cor", value: "Preto", price: 4999.9, stock: 10 },
+      { id: "VAR-002", attribute: "cor", value: "Branco", price: 4999.9, stock: 5 },
+    ],
+    createdAt: new Date(2023, 5, 15),
+    updatedAt: new Date(2023, 6, 10),
+  },
+  {
+    id: "PROD-002",
+    name: 'Notebook Ultrabook 14"',
+    sku: "ULTRA-14-SLV",
+    description: "Notebook ultrafino com processador de última geração",
+    price: 5999.0,
+    category: "eletronicos",
+    brand: "Dell",
+    stock: 8,
+    minStock: 3,
+    status: true,
+    featured: true,
+    images: [{ id: "IMG-003", url: "/placeholder.svg?height=80&width=80", isMain: true }],
+    createdAt: new Date(2023, 4, 20),
+    updatedAt: new Date(2023, 4, 20),
+  },
+  {
+    id: "PROD-003",
+    name: "Tênis Esportivo",
+    sku: "TENIS-ESP-001",
+    description: "Tênis para corrida com tecnologia de amortecimento",
+    price: 299.9,
+    promotionalPrice: 249.9,
+    category: "vestuario",
+    brand: "Nike",
+    stock: 25,
+    minStock: 10,
+    status: true,
+    featured: false,
+    images: [
+      { id: "IMG-004", url: "/placeholder.svg?height=80&width=80", isMain: true },
+      { id: "IMG-005", url: "/placeholder.svg?height=80&width=80", isMain: false },
+      { id: "IMG-006", url: "/placeholder.svg?height=80&width=80", isMain: false },
+    ],
+    variants: [
+      { id: "VAR-003", attribute: "tamanho", value: "39", price: 299.9, stock: 5 },
+      { id: "VAR-004", attribute: "tamanho", value: "40", price: 299.9, stock: 10 },
+      { id: "VAR-005", attribute: "tamanho", value: "41", price: 299.9, stock: 10 },
+    ],
+    createdAt: new Date(2023, 3, 10),
+    updatedAt: new Date(2023, 5, 5),
+  },
+  {
+    id: "PROD-004",
+    name: "Cafeteira Elétrica",
+    sku: "CAFE-ELET-001",
+    description: "Cafeteira elétrica com capacidade para 12 xícaras",
+    price: 249.9,
+    category: "eletrodomesticos",
+    brand: "Philips",
+    stock: 12,
+    status: true,
+    featured: false,
+    images: [{ id: "IMG-007", url: "/placeholder.svg?height=80&width=80", isMain: true }],
+    createdAt: new Date(2023, 2, 15),
+    updatedAt: new Date(2023, 2, 15),
+  },
+  {
+    id: "PROD-005",
+    name: "Fones de Ouvido Bluetooth",
+    sku: "FONE-BT-001",
+    description: "Fones de ouvido sem fio com cancelamento de ruído",
+    price: 349.9,
+    promotionalPrice: 299.9,
+    category: "eletronicos",
+    brand: "JBL",
+    stock: 0,
+    minStock: 5,
+    status: false,
+    featured: false,
+    images: [{ id: "IMG-008", url: "/placeholder.svg?height=80&width=80", isMain: true }],
+    createdAt: new Date(2023, 1, 20),
+    updatedAt: new Date(2023, 3, 25),
+  },
+  {
+    id: "PROD-006",
+    name: "Conjunto de Panelas",
+    sku: "PANEL-CONJ-001",
+    description: "Conjunto com 5 panelas antiaderentes",
+    price: 499.9,
+    category: "utensilios",
+    brand: "Tramontina",
+    stock: 7,
+    minStock: 3,
+    status: true,
+    featured: false,
+    images: [{ id: "IMG-009", url: "/placeholder.svg?height=80&width=80", isMain: true }],
+    createdAt: new Date(2023, 0, 10),
+    updatedAt: new Date(2023, 0, 10),
+  },
+  {
+    id: "PROD-007",
+    name: 'Smart TV 43"',
+    sku: "TV-SMART-43",
+    description: "Smart TV LED 43 polegadas com resolução 4K",
+    price: 2199.9,
+    promotionalPrice: 1899.9,
+    category: "eletronicos",
+    brand: "LG",
+    stock: 10,
+    minStock: 2,
+    status: true,
+    featured: true,
+    images: [{ id: "IMG-010", url: "/placeholder.svg?height=80&width=80", isMain: true }],
+    createdAt: new Date(2022, 11, 5),
+    updatedAt: new Date(2023, 1, 15),
+  },
+  {
+    id: "PROD-008",
+    name: "Cadeira de Escritório",
+    sku: "CAD-ESC-001",
+    description: "Cadeira ergonômica para escritório",
+    price: 799.9,
+    category: "moveis",
+    brand: "Multilaser",
+    stock: 4,
+    status: true,
+    featured: false,
+    images: [{ id: "IMG-011", url: "/placeholder.svg?height=80&width=80", isMain: true }],
+    createdAt: new Date(2022, 10, 20),
+    updatedAt: new Date(2022, 10, 20),
+  },
+]
+
+// Mapeamento de categorias
+const CATEGORIES = {
+  eletronicos: "Eletrônicos",
+  vestuario: "Vestuário",
+  eletrodomesticos: "Eletrodomésticos",
+  utensilios: "Utensílios",
+  moveis: "Móveis",
+}
+
+// Componente principal
+export default function ProductList() {
+  const [products, setProducts] = useState<Product[]>(EXAMPLE_PRODUCTS)
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>(EXAMPLE_PRODUCTS)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
+  const [stockFilter, setStockFilter] = useState<string>("all")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [sortField, setSortField] = useState<string>("name")
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [selectedItems, setSelectedItems] = useState<string[]>([])
+
+  const isMobile = useMediaQuery("(max-width: 768px)")
+  const itemsPerPage = 5
+
+
+  const router = useRouter()
+  // Aplicar filtros e ordenação
+  useEffect(() => {
+    let result = [...products]
+
+    // Aplicar filtro de busca
+    if (searchTerm) {
+      result = result.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.brand?.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    }
+
+    // Aplicar filtro de categoria
+    if (categoryFilter !== "all") {
+      result = result.filter((product) => product.category === categoryFilter)
+    }
+
+    // Aplicar filtro de estoque
+    if (stockFilter === "inStock") {
+      result = result.filter((product) => product.stock > 0)
+    } else if (stockFilter === "outOfStock") {
+      result = result.filter((product) => product.stock === 0)
+    } else if (stockFilter === "lowStock") {
+      result = result.filter((product) => product.minStock !== undefined && product.stock <= product.minStock)
+    }
+
+    // Aplicar filtro de status
+    if (statusFilter === "active") {
+      result = result.filter((product) => product.status)
+    } else if (statusFilter === "inactive") {
+      result = result.filter((product) => !product.status)
+    }
+
+    // Aplicar ordenação
+    result.sort((a, b) => {
+      let valueA: any = a[sortField as keyof Product]
+      let valueB: any = b[sortField as keyof Product]
+
+      // Tratamento especial para campos específicos
+      if (sortField === "category") {
+        valueA = CATEGORIES[a.category as keyof typeof CATEGORIES] || a.category
+        valueB = CATEGORIES[b.category as keyof typeof CATEGORIES] || b.category
+      }
+
+      if (valueA < valueB) return sortDirection === "asc" ? -1 : 1
+      if (valueA > valueB) return sortDirection === "asc" ? 1 : -1
+      return 0
+    })
+
+    setFilteredProducts(result)
+    setCurrentPage(1)
+  }, [searchTerm, categoryFilter, stockFilter, statusFilter, sortField, sortDirection, products])
+
+  // Alternar direção de ordenação
+  const toggleSortDirection = () => {
+    setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+  }
+
+  // Limpar filtros
+  const clearFilters = () => {
+    setSearchTerm("")
+    setCategoryFilter("all")
+    setStockFilter("all")
+    setStatusFilter("all")
+    setIsFilterOpen(false)
+  }
+
+  // Formatar valor em reais
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value)
+  }
+
+  // Paginação
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  // Manipular seleção de itens
+  const toggleItemSelection = (id: string) => {
+    setSelectedItems((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]))
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedItems.length === paginatedProducts.length) {
+      setSelectedItems([])
+    } else {
+      setSelectedItems(paginatedProducts.map((product) => product.id))
+    }
+  }
+
+  // Simular exclusão de produto
+  const handleDeleteProduct = (id: string) => {
+    setProducts((prev) => prev.filter((product) => product.id !== id))
+    setSelectedItems((prev) => prev.filter((item) => item !== id))
+    setIsDeleteDialogOpen(false)
+  }
+
+  // Simular exclusão em massa
+  const handleBulkDelete = () => {
+    setProducts((prev) => prev.filter((product) => !selectedItems.includes(product.id)))
+    setSelectedItems([])
+    setIsDeleteDialogOpen(false)
+  }
+
+  // handleClickEdit 
+  const handleClickEdit = (id: string) => {
+    console.log(`Editando produto ${id}`)
+    router.push(`/products/edit/${id}`)  
+  }
+
+  // Componente de detalhes do produto para desktop
+  const ProductDetailsDialog = () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Eye className="h-4 w-4" />
+          <span className="sr-only">Ver detalhes</span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Detalhes do Produto</DialogTitle>
+          <DialogDescription>Informações completas do produto</DialogDescription>
+        </DialogHeader>
+        <ProductDetailsContent />
+      </DialogContent>
+    </Dialog>
+  )
+
+  // Componente de detalhes do produto para mobile
+  const ProductDetailsDrawer = () => (
+    <Drawer>
+      <DrawerTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Eye className="h-4 w-4" />
+          <span className="sr-only">Ver detalhes</span>
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Detalhes do Produto</DrawerTitle>
+          <DrawerDescription>Informações completas do produto</DrawerDescription>
+        </DrawerHeader>
+        <ScrollArea className="h-[calc(80vh-10rem)] px-4">
+          <ProductDetailsContent />
+        </ScrollArea>
+        <DrawerFooter>
+          <DrawerClose asChild>
+            <Button variant="outline">Fechar</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  )
+
+  // Conteúdo dos detalhes do produto
+  const ProductDetailsContent = () => {
+    if (!selectedProduct) return null
+
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row gap-6">
+          <div className="sm:w-1/3">
+            <div className="aspect-square rounded-md overflow-hidden border">
+              <img
+                src={selectedProduct.images[0]?.url || "/placeholder.svg"}
+                alt={selectedProduct.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {selectedProduct.images.length > 1 && (
+              <div className="grid grid-cols-4 gap-2 mt-2">
+                {selectedProduct.images.slice(1).map((image) => (
+                  <div key={image.id} className="aspect-square rounded-md overflow-hidden border">
+                    <img
+                      src={image.url || "/placeholder.svg"}
+                      alt={selectedProduct.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="sm:w-2/3 space-y-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-xl font-bold">{selectedProduct.name}</h2>
+                <p className="text-sm text-muted-foreground">SKU: {selectedProduct.sku}</p>
+              </div>
+              <Badge variant={selectedProduct.status ? "default" : "secondary"}>
+                {selectedProduct.status ? "Ativo" : "Inativo"}
+              </Badge>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-baseline gap-2">
+                {selectedProduct.promotionalPrice ? (
+                  <>
+                    <span className="text-xl font-bold">{formatCurrency(selectedProduct.promotionalPrice)}</span>
+                    <span className="text-sm text-muted-foreground line-through">
+                      {formatCurrency(selectedProduct.price)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-xl font-bold">{formatCurrency(selectedProduct.price)}</span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Badge variant={selectedProduct.stock > 0 ? "outline" : "destructive"}>
+                  {selectedProduct.stock > 0 ? `${selectedProduct.stock} em estoque` : "Fora de estoque"}
+                </Badge>
+                {selectedProduct.featured && <Badge variant="secondary">Destaque</Badge>}
+              </div>
+            </div>
+
+            <Separator />
+
+            <div>
+              <h3 className="font-medium mb-2">Descrição</h3>
+              <p className="text-sm">{selectedProduct.description}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="font-medium mb-2">Categoria</h3>
+                <p className="text-sm">
+                  {CATEGORIES[selectedProduct.category as keyof typeof CATEGORIES] || selectedProduct.category}
+                </p>
+              </div>
+
+              {selectedProduct.brand && (
+                <div>
+                  <h3 className="font-medium mb-2">Marca</h3>
+                  <p className="text-sm">{selectedProduct.brand}</p>
+                </div>
+              )}
+            </div>
+
+            {selectedProduct.variants && selectedProduct.variants.length > 0 && (
+              <>
+                <Separator />
+                <div>
+                  <h3 className="font-medium mb-2">Variantes</h3>
+                  <div className="space-y-2">
+                    {selectedProduct.variants.map((variant) => (
+                      <div key={variant.id} className="flex justify-between items-center p-2 bg-muted rounded-md">
+                        <div>
+                          <span className="text-sm font-medium">
+                            {variant.attribute}: {variant.value}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-medium">{formatCurrency(variant.price)}</div>
+                          <div className="text-xs text-muted-foreground">Estoque: {variant.stock}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Componente de filtros para desktop
+  const FiltersPopover = () => (
+    <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="h-8 gap-1">
+          <Filter className="h-3.5 w-3.5" />
+          <span>Filtros</span>
+          <ChevronDown className="h-3.5 w-3.5" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80">
+        <div className="space-y-4">
+          <h4 className="font-medium">Filtrar Produtos</h4>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Categoria</Label>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Todas as categorias" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as categorias</SelectItem>
+                <SelectItem value="eletronicos">Eletrônicos</SelectItem>
+                <SelectItem value="vestuario">Vestuário</SelectItem>
+                <SelectItem value="eletrodomesticos">Eletrodomésticos</SelectItem>
+                <SelectItem value="utensilios">Utensílios</SelectItem>
+                <SelectItem value="moveis">Móveis</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="stock">Estoque</Label>
+            <Select value={stockFilter} onValueChange={setStockFilter}>
+              <SelectTrigger id="stock">
+                <SelectValue placeholder="Todos os produtos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os produtos</SelectItem>
+                <SelectItem value="inStock">Em estoque</SelectItem>
+                <SelectItem value="outOfStock">Fora de estoque</SelectItem>
+                <SelectItem value="lowStock">Estoque baixo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Todos os status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="active">Ativos</SelectItem>
+                <SelectItem value="inactive">Inativos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex justify-between pt-2">
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              Limpar
+            </Button>
+            <Button size="sm" onClick={() => setIsFilterOpen(false)}>
+              Aplicar Filtros
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+
+  // Componente de filtros para mobile
+  const FiltersDrawer = () => (
+    <Drawer open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+      <DrawerTrigger asChild>
+        <Button variant="outline" size="sm" className="h-8 gap-1">
+          <Filter className="h-3.5 w-3.5" />
+          <span>Filtros</span>
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Filtrar Produtos</DrawerTitle>
+        </DrawerHeader>
+        <div className="px-4 space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="category-mobile">Categoria</Label>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger id="category-mobile">
+                <SelectValue placeholder="Todas as categorias" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as categorias</SelectItem>
+                <SelectItem value="eletronicos">Eletrônicos</SelectItem>
+                <SelectItem value="vestuario">Vestuário</SelectItem>
+                <SelectItem value="eletrodomesticos">Eletrodomésticos</SelectItem>
+                <SelectItem value="utensilios">Utensílios</SelectItem>
+                <SelectItem value="moveis">Móveis</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="stock-mobile">Estoque</Label>
+            <Select value={stockFilter} onValueChange={setStockFilter}>
+              <SelectTrigger id="stock-mobile">
+                <SelectValue placeholder="Todos os produtos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os produtos</SelectItem>
+                <SelectItem value="inStock">Em estoque</SelectItem>
+                <SelectItem value="outOfStock">Fora de estoque</SelectItem>
+                <SelectItem value="lowStock">Estoque baixo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="status-mobile">Status</Label>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger id="status-mobile">
+                <SelectValue placeholder="Todos os status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="active">Ativos</SelectItem>
+                <SelectItem value="inactive">Inativos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DrawerFooter>
+          <Button onClick={() => setIsFilterOpen(false)}>Aplicar Filtros</Button>
+          <Button variant="outline" onClick={clearFilters}>
+            Limpar Filtros
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  )
+
+  // Diálogo de confirmação de exclusão
+  const DeleteConfirmationDialog = ({ id }: { id?: string }) => (
+    <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Confirmar Exclusão</DialogTitle>
+          <DialogDescription>
+            {id
+              ? "Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita."
+              : `Tem certeza que deseja excluir ${selectedItems.length} produtos selecionados? Esta ação não pode ser desfeita.`}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            Cancelar
+          </Button>
+          <Button variant="destructive" onClick={() => (id ? handleDeleteProduct(id) : handleBulkDelete())}>
+            Excluir
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <CardTitle>Produtos</CardTitle>
+            <CardDescription>Gerencie seu catálogo de produtos</CardDescription>
+          </div>
+          <Button className="sm:w-auto">
+            <Plus className="h-4 w-4 mr-2" />
+            <Link href="/products/new">Novo Produto</Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-2 justify-between">
+            <div className="relative w-full sm:max-w-xs">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Buscar produtos..."
+                className="pl-8 h-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-9 w-9"
+                  onClick={() => setSearchTerm("")}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Limpar busca</span>
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-2 self-end">
+              {isMobile ? <FiltersDrawer /> : <FiltersPopover />}
+
+              <Select value={sortField} onValueChange={setSortField}>
+                <SelectTrigger className="h-8 w-[180px]">
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Nome</SelectItem>
+                  <SelectItem value="price">Preço</SelectItem>
+                  <SelectItem value="stock">Estoque</SelectItem>
+                  <SelectItem value="category">Categoria</SelectItem>
+                  <SelectItem value="createdAt">Data de Criação</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={toggleSortDirection}>
+                {sortDirection === "asc" ? <ArrowUpAZ className="h-4 w-4" /> : <ArrowDownAZ className="h-4 w-4" />}
+                <span className="sr-only">{sortDirection === "asc" ? "Ordem crescente" : "Ordem decrescente"}</span>
+              </Button>
+            </div>
+          </div>
+
+          {selectedItems.length > 0 && (
+            <div className="bg-muted/50 p-2 rounded-md flex items-center justify-between">
+              <span className="text-sm">
+                {selectedItems.length} {selectedItems.length === 1 ? "produto selecionado" : "produtos selecionados"}
+              </span>
+              <Button variant="destructive" size="sm" onClick={() => setIsDeleteDialogOpen(true)}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Excluir Selecionados
+              </Button>
+            </div>
+          )}
+
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-12 border rounded-md">
+              <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                <Search className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <h3 className="mt-4 text-lg font-medium">Nenhum produto encontrado</h3>
+              <p className="mt-1 text-sm text-muted-foreground">Tente ajustar os filtros ou criar um novo produto.</p>
+              <Button variant="outline" className="mt-4" onClick={clearFilters}>
+                Limpar Filtros
+              </Button>
+            </div>
+          ) : (
+            <>
+              {/* Versão para desktop */}
+              <div className="hidden md:block border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[40px]">
+                        <Checkbox
+                          checked={paginatedProducts.length > 0 && selectedItems.length === paginatedProducts.length}
+                          onCheckedChange={toggleSelectAll}
+                          aria-label="Selecionar todos"
+                        />
+                      </TableHead>
+                      <TableHead className="w-[80px]">Imagem</TableHead>
+                      <TableHead>Produto</TableHead>
+                      <TableHead>SKU</TableHead>
+                      <TableHead>Categoria</TableHead>
+                      <TableHead>Estoque</TableHead>
+                      <TableHead>Preço</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="w-[100px]">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedProducts.map((product) => (
+                      <TableRow key={product.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedItems.includes(product.id)}
+                            onCheckedChange={() => toggleItemSelection(product.id)}
+                            aria-label={`Selecionar ${product.name}`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="w-10 h-10 rounded-md overflow-hidden">
+                            <img
+                              src={product.images[0]?.url || "/placeholder.svg"}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">{product.name}</TableCell>
+                        <TableCell className="text-muted-foreground">{product.sku}</TableCell>
+                        <TableCell>
+                          {CATEGORIES[product.category as keyof typeof CATEGORIES] || product.category}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <span className={product.stock === 0 ? "text-destructive" : ""}>{product.stock}</span>
+                            {product.minStock !== undefined && product.stock <= product.minStock && (
+                              <Badge variant="outline" className="ml-2 text-xs">
+                                Baixo
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {product.promotionalPrice ? (
+                            <div className="space-y-1">
+                              <div className="font-medium">{formatCurrency(product.promotionalPrice)}</div>
+                              <div className="text-xs text-muted-foreground line-through">
+                                {formatCurrency(product.price)}
+                              </div>
+                            </div>
+                          ) : (
+                            formatCurrency(product.price)
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Switch
+                            checked={product.status}
+                            aria-label="Toggle status"
+                            onCheckedChange={(checked) => {
+                              setProducts((prev) =>
+                                prev.map((p) => (p.id === product.id ? { ...p, status: checked } : p)),
+                              )
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <div onClick={() => setSelectedProduct(product)}>
+                              <ProductDetailsDialog />
+                            </div>
+                            <Button variant="ghost" size="icon">
+                             <Link href='products/edit'> <Edit className="h-4 w-4" /></Link>
+                             
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Mais opções</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setProducts((prev) =>
+                                      prev.map((p) => (p.id === product.id ? { ...p, featured: !p.featured } : p)),
+                                    )
+                                  }}
+                                >
+                                  {product.featured ? "Remover destaque" : "Destacar produto"}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setProducts((prev) =>
+                                      prev.map((p) => (p.id === product.id ? { ...p, status: !p.status } : p)),
+                                    )
+                                  }}
+                                >
+                                  {product.status ? "Desativar produto" : "Ativar produto"}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive"
+                                  onClick={() => {
+                                    setIsDeleteDialogOpen(true)
+                                    setSelectedProduct(product)
+                                  }}
+                                >
+                                  Excluir produto
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Versão para mobile */}
+              <div className="md:hidden space-y-4">
+                {paginatedProducts.map((product) => (
+                  <div key={product.id} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        checked={selectedItems.includes(product.id)}
+                        onCheckedChange={() => toggleItemSelection(product.id)}
+                        aria-label={`Selecionar ${product.name}`}
+                      />
+                      <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                        <img
+                          src={product.images[0]?.url || "/placeholder.svg"}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium">{product.name}</h4>
+                        <p className="text-sm text-muted-foreground">{product.sku}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline">
+                            {CATEGORIES[product.category as keyof typeof CATEGORIES] || product.category}
+                          </Badge>
+                          {product.featured && <Badge variant="secondary">Destaque</Badge>}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="font-medium">
+                          {product.promotionalPrice
+                            ? formatCurrency(product.promotionalPrice)
+                            : formatCurrency(product.price)}
+                        </div>
+                        <div className="text-sm">
+                          Estoque:
+                          <span className={product.stock === 0 ? "text-destructive ml-1" : "ml-1"}>
+                            {product.stock}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <div onClick={() => setSelectedProduct(product)}>
+                          <ProductDetailsDrawer />
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => {
+                          handleClickEdit(product.id)
+                        }}>
+                          <Edit className="h-4 w-4" />
+                          <span className="sr-only">Editar</span>
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Mais opções</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setProducts((prev) =>
+                                  prev.map((p) => (p.id === product.id ? { ...p, status: !p.status } : p)),
+                                )
+                              }}
+                            >
+                              {product.status ? "Desativar" : "Ativar"}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setProducts((prev) =>
+                                  prev.map((p) => (p.id === product.id ? { ...p, featured: !p.featured } : p)),
+                                )
+                              }}
+                            >
+                              {product.featured ? "Remover destaque" : "Destacar"}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => {
+                                setIsDeleteDialogOpen(true)
+                                setSelectedProduct(product)
+                              }}
+                            >
+                              Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Paginação */}
+          {filteredProducts.length > 0 && (
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Mostrando {(currentPage - 1) * itemsPerPage + 1} a{" "}
+                {Math.min(currentPage * itemsPerPage, filteredProducts.length)} de {filteredProducts.length} produtos
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="sr-only">Página anterior</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                  <span className="sr-only">Próxima página</span>
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+
+      {/* Diálogo de confirmação de exclusão */}
+      <DeleteConfirmationDialog id={selectedProduct?.id} />
+    </Card>
+  )
+}
+
