@@ -60,203 +60,172 @@ import { useMediaQuery } from "@/hooks/use-mobile"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-// Tipos
-interface ProductImage {
-  id: string
-  url: string
-  isMain: boolean
-}
 
-interface ProductVariant {
-  id: string
-  attribute: string
-  value: string
-  price: number
-  stock: number
-}
 
-interface Product {
-  id: string
-  name: string
-  sku: string
-  description: string
-  price: number
-  promotionalPrice?: number
-  category: string
-  brand?: string
-  stock: number
-  minStock?: number
-  status: boolean
-  featured: boolean
-  images: ProductImage[]
-  variants?: ProductVariant[]
-  createdAt: Date
-  updatedAt: Date
-}
+// // Dados de exemplo
+// const EXAMPLE_PRODUCTS: Product[] = [
+//   {
+//     id: "PROD-001",
+//     name: "Smartphone Galaxy S23",
+//     sku: "SAMS-S23-BLK",
+//     description: "Smartphone Samsung Galaxy S23 com 256GB de armazenamento",
+//     price: 4999.9,
+//     promotionalPrice: 4499.9,
+//     category: "eletronicos",
+//     brand: "Samsung",
+//     stock: 15,
+//     minStock: 5,
+//     status: true,
+//     featured: true,
+//     images: [
+//       { id: "IMG-001", url: "/placeholder.svg?height=80&width=80", isMain: true },
+//       { id: "IMG-002", url: "/placeholder.svg?height=80&width=80", isMain: false },
+//     ],
+//     variants: [
+//       { id: "VAR-001", attribute: "cor", value: "Preto", price: 4999.9, stock: 10 },
+//       { id: "VAR-002", attribute: "cor", value: "Branco", price: 4999.9, stock: 5 },
+//     ],
+//     createdAt: new Date(2023, 5, 15),
+//     updatedAt: new Date(2023, 6, 10),
+//   },
+//   {
+//     id: "PROD-002",
+//     name: 'Notebook Ultrabook 14"',
+//     sku: "ULTRA-14-SLV",
+//     description: "Notebook ultrafino com processador de última geração",
+//     price: 5999.0,
+//     category_id: 1,
+//     brand: "Dell",
+    
+   
+    
+//     featured: true,
+//     images: [{ id: "IMG-003", url: "/placeholder.svg?height=80&width=80", isMain: true }],
+//     createdAt: new Date(2023, 4, 20),
+//     updatedAt: new Date(2023, 4, 20),
+//   },
+//   {
+//     id: "PROD-003",
+//     name: "Tênis Esportivo",
+//     sku: "TENIS-ESP-001",
+//     description: "Tênis para corrida com tecnologia de amortecimento",
+//     price: 299.9,
+//     promotionalPrice: 249.9,
+//     category: "vestuario",
+//     brand: "Nike",
+//     stock: 25,
+//     minStock: 10,
+//     status: true,
+//     featured: false,
+//     images: [
+//       { id: "IMG-004", url: "/placeholder.svg?height=80&width=80", isMain: true },
+//       { id: "IMG-005", url: "/placeholder.svg?height=80&width=80", isMain: false },
+//       { id: "IMG-006", url: "/placeholder.svg?height=80&width=80", isMain: false },
+//     ],
+//     variants: [
+//       { id: "VAR-003", attribute: "tamanho", value: "39", price: 299.9, stock: 5 },
+//       { id: "VAR-004", attribute: "tamanho", value: "40", price: 299.9, stock: 10 },
+//       { id: "VAR-005", attribute: "tamanho", value: "41", price: 299.9, stock: 10 },
+//     ],
+//     createdAt: new Date(2023, 3, 10),
+//     updatedAt: new Date(2023, 5, 5),
+//   },
+//   {
+//     id: "PROD-004",
+//     name: "Cafeteira Elétrica",
+//     sku: "CAFE-ELET-001",
+//     description: "Cafeteira elétrica com capacidade para 12 xícaras",
+//     price: 249.9,
+//     category: "eletrodomesticos",
+//     brand: "Philips",
+//     stock: 12,
+//     status: true,
+//     featured: false,
+//     images: [{ id: "IMG-007", url: "/placeholder.svg?height=80&width=80", isMain: true }],
+//     createdAt: new Date(2023, 2, 15),
+//     updatedAt: new Date(2023, 2, 15),
+//   },
+//   {
+//     id: "PROD-005",
+//     name: "Fones de Ouvido Bluetooth",
+//     sku: "FONE-BT-001",
+//     description: "Fones de ouvido sem fio com cancelamento de ruído",
+//     price: 349.9,
+//     promotionalPrice: 299.9,
+//     category: "eletronicos",
+//     brand: "JBL",
+//     stock: 0,
+//     minStock: 5,
+//     status: false,
+//     featured: false,
+//     images: [{ id: "IMG-008", url: "/placeholder.svg?height=80&width=80", isMain: true }],
+//     createdAt: new Date(2023, 1, 20),
+//     updatedAt: new Date(2023, 3, 25),
+//   },
+//   {
+//     id: "PROD-006",
+//     name: "Conjunto de Panelas",
+//     sku: "PANEL-CONJ-001",
+//     description: "Conjunto com 5 panelas antiaderentes",
+//     price: 499.9,
+//     category: "utensilios",
+//     brand: "Tramontina",
+//     stock: 7,
+//     minStock: 3,
+//     status: true,
+//     featured: false,
+//     images: [{ id: "IMG-009", url: "/placeholder.svg?height=80&width=80", isMain: true }],
+//     createdAt: new Date(2023, 0, 10),
+//     updatedAt: new Date(2023, 0, 10),
+//   },
+//   {
+//     id: "PROD-007",
+//     name: 'Smart TV 43"',
+//     sku: "TV-SMART-43",
+//     description: "Smart TV LED 43 polegadas com resolução 4K",
+//     price: 2199.9,
+//     promotionalPrice: 1899.9,
+//     category: "eletronicos",
+//     brand: "LG",
+//     stock: 10,
+//     minStock: 2,
+//     status: true,
+//     featured: true,
+//     images: [{ id: "IMG-010", url: "/placeholder.svg?height=80&width=80", isMain: true }],
+//     createdAt: new Date(2022, 11, 5),
+//     updatedAt: new Date(2023, 1, 15),
+//   },
+//   {
+//     id: "PROD-008",
+//     name: "Cadeira de Escritório",
+//     sku: "CAD-ESC-001",
+//     description: "Cadeira ergonômica para escritório",
+//     price: 799.9,
+//     category: "moveis",
+//     brand: "Multilaser",
+//     stock: 4,
+//     status: true,
+//     featured: false,
+//     images: [{ id: "IMG-011", url: "/placeholder.svg?height=80&width=80", isMain: true }],
+//     createdAt: new Date(2022, 10, 20),
+//     updatedAt: new Date(2022, 10, 20),
+//   },
+// ]
 
-// Dados de exemplo
-const EXAMPLE_PRODUCTS: Product[] = [
-  {
-    id: "PROD-001",
-    name: "Smartphone Galaxy S23",
-    sku: "SAMS-S23-BLK",
-    description: "Smartphone Samsung Galaxy S23 com 256GB de armazenamento",
-    price: 4999.9,
-    promotionalPrice: 4499.9,
-    category: "eletronicos",
-    brand: "Samsung",
-    stock: 15,
-    minStock: 5,
-    status: true,
-    featured: true,
-    images: [
-      { id: "IMG-001", url: "/placeholder.svg?height=80&width=80", isMain: true },
-      { id: "IMG-002", url: "/placeholder.svg?height=80&width=80", isMain: false },
-    ],
-    variants: [
-      { id: "VAR-001", attribute: "cor", value: "Preto", price: 4999.9, stock: 10 },
-      { id: "VAR-002", attribute: "cor", value: "Branco", price: 4999.9, stock: 5 },
-    ],
-    createdAt: new Date(2023, 5, 15),
-    updatedAt: new Date(2023, 6, 10),
-  },
-  {
-    id: "PROD-002",
-    name: 'Notebook Ultrabook 14"',
-    sku: "ULTRA-14-SLV",
-    description: "Notebook ultrafino com processador de última geração",
-    price: 5999.0,
-    category: "eletronicos",
-    brand: "Dell",
-    stock: 8,
-    minStock: 3,
-    status: true,
-    featured: true,
-    images: [{ id: "IMG-003", url: "/placeholder.svg?height=80&width=80", isMain: true }],
-    createdAt: new Date(2023, 4, 20),
-    updatedAt: new Date(2023, 4, 20),
-  },
-  {
-    id: "PROD-003",
-    name: "Tênis Esportivo",
-    sku: "TENIS-ESP-001",
-    description: "Tênis para corrida com tecnologia de amortecimento",
-    price: 299.9,
-    promotionalPrice: 249.9,
-    category: "vestuario",
-    brand: "Nike",
-    stock: 25,
-    minStock: 10,
-    status: true,
-    featured: false,
-    images: [
-      { id: "IMG-004", url: "/placeholder.svg?height=80&width=80", isMain: true },
-      { id: "IMG-005", url: "/placeholder.svg?height=80&width=80", isMain: false },
-      { id: "IMG-006", url: "/placeholder.svg?height=80&width=80", isMain: false },
-    ],
-    variants: [
-      { id: "VAR-003", attribute: "tamanho", value: "39", price: 299.9, stock: 5 },
-      { id: "VAR-004", attribute: "tamanho", value: "40", price: 299.9, stock: 10 },
-      { id: "VAR-005", attribute: "tamanho", value: "41", price: 299.9, stock: 10 },
-    ],
-    createdAt: new Date(2023, 3, 10),
-    updatedAt: new Date(2023, 5, 5),
-  },
-  {
-    id: "PROD-004",
-    name: "Cafeteira Elétrica",
-    sku: "CAFE-ELET-001",
-    description: "Cafeteira elétrica com capacidade para 12 xícaras",
-    price: 249.9,
-    category: "eletrodomesticos",
-    brand: "Philips",
-    stock: 12,
-    status: true,
-    featured: false,
-    images: [{ id: "IMG-007", url: "/placeholder.svg?height=80&width=80", isMain: true }],
-    createdAt: new Date(2023, 2, 15),
-    updatedAt: new Date(2023, 2, 15),
-  },
-  {
-    id: "PROD-005",
-    name: "Fones de Ouvido Bluetooth",
-    sku: "FONE-BT-001",
-    description: "Fones de ouvido sem fio com cancelamento de ruído",
-    price: 349.9,
-    promotionalPrice: 299.9,
-    category: "eletronicos",
-    brand: "JBL",
-    stock: 0,
-    minStock: 5,
-    status: false,
-    featured: false,
-    images: [{ id: "IMG-008", url: "/placeholder.svg?height=80&width=80", isMain: true }],
-    createdAt: new Date(2023, 1, 20),
-    updatedAt: new Date(2023, 3, 25),
-  },
-  {
-    id: "PROD-006",
-    name: "Conjunto de Panelas",
-    sku: "PANEL-CONJ-001",
-    description: "Conjunto com 5 panelas antiaderentes",
-    price: 499.9,
-    category: "utensilios",
-    brand: "Tramontina",
-    stock: 7,
-    minStock: 3,
-    status: true,
-    featured: false,
-    images: [{ id: "IMG-009", url: "/placeholder.svg?height=80&width=80", isMain: true }],
-    createdAt: new Date(2023, 0, 10),
-    updatedAt: new Date(2023, 0, 10),
-  },
-  {
-    id: "PROD-007",
-    name: 'Smart TV 43"',
-    sku: "TV-SMART-43",
-    description: "Smart TV LED 43 polegadas com resolução 4K",
-    price: 2199.9,
-    promotionalPrice: 1899.9,
-    category: "eletronicos",
-    brand: "LG",
-    stock: 10,
-    minStock: 2,
-    status: true,
-    featured: true,
-    images: [{ id: "IMG-010", url: "/placeholder.svg?height=80&width=80", isMain: true }],
-    createdAt: new Date(2022, 11, 5),
-    updatedAt: new Date(2023, 1, 15),
-  },
-  {
-    id: "PROD-008",
-    name: "Cadeira de Escritório",
-    sku: "CAD-ESC-001",
-    description: "Cadeira ergonômica para escritório",
-    price: 799.9,
-    category: "moveis",
-    brand: "Multilaser",
-    stock: 4,
-    status: true,
-    featured: false,
-    images: [{ id: "IMG-011", url: "/placeholder.svg?height=80&width=80", isMain: true }],
-    createdAt: new Date(2022, 10, 20),
-    updatedAt: new Date(2022, 10, 20),
-  },
-]
-
-// Mapeamento de categorias
-const CATEGORIES = {
-  eletronicos: "Eletrônicos",
-  vestuario: "Vestuário",
-  eletrodomesticos: "Eletrodomésticos",
-  utensilios: "Utensílios",
-  moveis: "Móveis",
-}
+// // Mapeamento de categorias
+// const CATEGORIES = {
+//   eletronicos: "Eletrônicos",
+//   vestuario: "Vestuário",
+//   eletrodomesticos: "Eletrodomésticos",
+//   utensilios: "Utensílios",
+//   moveis: "Móveis",
+// }
 
 // Componente principal
-export default function ProductList() {
-  const [products, setProducts] = useState<Product[]>(EXAMPLE_PRODUCTS)
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(EXAMPLE_PRODUCTS)
+export default function ProductList({ items, categories }: { items: Product[], categories: any[] }) {
+  const [products, setProducts] = useState<Product[]>(items)
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>(items)
+  const [categorieslist, setCategorielist] = useState<any[]>(categories)
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [stockFilter, setStockFilter] = useState<string>("all")
@@ -267,7 +236,7 @@ export default function ProductList() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [selectedItems, setSelectedItems] = useState<string[]>([])
+  const [selectedItems, setSelectedItems] = useState<number[]>([])
 
   const isMobile = useMediaQuery("(max-width: 768px)")
   const itemsPerPage = 5
@@ -290,23 +259,23 @@ export default function ProductList() {
 
     // Aplicar filtro de categoria
     if (categoryFilter !== "all") {
-      result = result.filter((product) => product.category === categoryFilter)
+      result = result.filter((product) => product.category_id === categorieslist.find((category) => category.name === categoryFilter)?.id)
     }
 
     // Aplicar filtro de estoque
     if (stockFilter === "inStock") {
-      result = result.filter((product) => product.stock > 0)
+      result = result.filter((product) => product.ammount_stock > 0)
     } else if (stockFilter === "outOfStock") {
-      result = result.filter((product) => product.stock === 0)
+      result = result.filter((product) => product.ammount_stock === 0)
     } else if (stockFilter === "lowStock") {
-      result = result.filter((product) => product.minStock !== undefined && product.stock <= product.minStock)
+      result = result.filter((product) => product.min_stock !== undefined && product.ammount_stock <= product.min_stock)
     }
 
     // Aplicar filtro de status
     if (statusFilter === "active") {
-      result = result.filter((product) => product.status)
+      result = result.filter((product) => product.active)
     } else if (statusFilter === "inactive") {
-      result = result.filter((product) => !product.status)
+      result = result.filter((product) => !product.active)
     }
 
     // Aplicar ordenação
@@ -316,8 +285,8 @@ export default function ProductList() {
 
       // Tratamento especial para campos específicos
       if (sortField === "category") {
-        valueA = CATEGORIES[a.category as keyof typeof CATEGORIES] || a.category
-        valueB = CATEGORIES[b.category as keyof typeof CATEGORIES] || b.category
+        valueA = categorieslist.find((category) => category.id === a.category_id)?.name || a.category_id
+        valueB = categorieslist.find((category) => category.id === b.category_id)?.name || b.category_id
       }
 
       if (valueA < valueB) return sortDirection === "asc" ? -1 : 1
@@ -356,7 +325,7 @@ export default function ProductList() {
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   // Manipular seleção de itens
-  const toggleItemSelection = (id: string) => {
+  const toggleItemSelection = (id: number) => {
     setSelectedItems((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]))
   }
 
@@ -369,7 +338,7 @@ export default function ProductList() {
   }
 
   // Simular exclusão de produto
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = (id: number) => {
     setProducts((prev) => prev.filter((product) => product.id !== id))
     setSelectedItems((prev) => prev.filter((item) => item !== id))
     setIsDeleteDialogOpen(false)
@@ -383,7 +352,7 @@ export default function ProductList() {
   }
 
   // handleClickEdit 
-  const handleClickEdit = (id: string) => {
+  const handleClickEdit = (id: number) => {
     console.log(`Editando produto ${id}`)
     router.push(`/products/edit/${id}`)  
   }
@@ -443,24 +412,18 @@ export default function ProductList() {
           <div className="sm:w-1/3">
             <div className="aspect-square rounded-md overflow-hidden border">
               <img
-                src={selectedProduct.images[0]?.url || "/placeholder.svg"}
+                src={selectedProduct.images?.url || "/placeholder.svg"}
                 alt={selectedProduct.name}
                 className="w-full h-full object-cover"
               />
             </div>
-            {selectedProduct.images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2 mt-2">
-                {selectedProduct.images.slice(1).map((image) => (
-                  <div key={image.id} className="aspect-square rounded-md overflow-hidden border">
+            <div key={selectedProduct.images.id} className="aspect-square rounded-md overflow-hidden border">
                     <img
-                      src={image.url || "/placeholder.svg"}
+                      src={selectedProduct.images.url || "/placeholder.svg"}
                       alt={selectedProduct.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                ))}
-              </div>
-            )}
           </div>
 
           <div className="sm:w-2/3 space-y-4">
@@ -469,16 +432,16 @@ export default function ProductList() {
                 <h2 className="text-xl font-bold">{selectedProduct.name}</h2>
                 <p className="text-sm text-muted-foreground">SKU: {selectedProduct.sku}</p>
               </div>
-              <Badge variant={selectedProduct.status ? "default" : "secondary"}>
-                {selectedProduct.status ? "Ativo" : "Inativo"}
+              <Badge variant={selectedProduct.active ? "default" : "secondary"}>
+                {selectedProduct.active ? "Ativo" : "Inativo"}
               </Badge>
             </div>
 
             <div className="space-y-1">
               <div className="flex items-baseline gap-2">
-                {selectedProduct.promotionalPrice ? (
+                {selectedProduct.price_offer ? (
                   <>
-                    <span className="text-xl font-bold">{formatCurrency(selectedProduct.promotionalPrice)}</span>
+                    <span className="text-xl font-bold">{formatCurrency(selectedProduct.price_offer)}</span>
                     <span className="text-sm text-muted-foreground line-through">
                       {formatCurrency(selectedProduct.price)}
                     </span>
@@ -489,10 +452,10 @@ export default function ProductList() {
               </div>
 
               <div className="flex items-center gap-2">
-                <Badge variant={selectedProduct.stock > 0 ? "outline" : "destructive"}>
-                  {selectedProduct.stock > 0 ? `${selectedProduct.stock} em estoque` : "Fora de estoque"}
+                <Badge variant={selectedProduct.ammount_stock > 0 ? "outline" : "destructive"}>
+                  {selectedProduct.ammount_stock > 0 ? `${selectedProduct.ammount_stock} em estoque` : "Fora de estoque"}
                 </Badge>
-                {selectedProduct.featured && <Badge variant="secondary">Destaque</Badge>}
+                {selectedProduct.is_main && <Badge variant="secondary">Destaque</Badge>}
               </div>
             </div>
 
@@ -507,7 +470,7 @@ export default function ProductList() {
               <div>
                 <h3 className="font-medium mb-2">Categoria</h3>
                 <p className="text-sm">
-                  {CATEGORIES[selectedProduct.category as keyof typeof CATEGORIES] || selectedProduct.category}
+                  { selectedProduct.name}
                 </p>
               </div>
 
@@ -519,7 +482,7 @@ export default function ProductList() {
               )}
             </div>
 
-            {selectedProduct.variants && selectedProduct.variants.length > 0 && (
+            {/* {selectedProduct.variants && selectedProduct.variants.length > 0 && (
               <>
                 <Separator />
                 <div>
@@ -534,14 +497,14 @@ export default function ProductList() {
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-medium">{formatCurrency(variant.price)}</div>
-                          <div className="text-xs text-muted-foreground">Estoque: {variant.stock}</div>
+                          <div className="text-xs text-muted-foreground">Estoque: {variantammount_stock}</div>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
               </>
-            )}
+            )} */}
           </div>
         </div>
       </div>
@@ -692,7 +655,7 @@ export default function ProductList() {
   )
 
   // Diálogo de confirmação de exclusão
-  const DeleteConfirmationDialog = ({ id }: { id?: string }) => (
+  const DeleteConfirmationDialog = ({ id }: { id?: number }) => (
     <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
       <DialogContent>
         <DialogHeader>
@@ -836,7 +799,7 @@ export default function ProductList() {
                         <TableCell>
                           <div className="w-10 h-10 rounded-md overflow-hidden">
                             <img
-                              src={product.images[0]?.url || "/placeholder.svg"}
+                              src={product.images?.url || "/placeholder.svg"}
                               alt={product.name}
                               className="w-full h-full object-cover"
                             />
@@ -845,12 +808,12 @@ export default function ProductList() {
                         <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell className="text-muted-foreground">{product.sku}</TableCell>
                         <TableCell>
-                          {CATEGORIES[product.category as keyof typeof CATEGORIES] || product.category}
+                          {selectedProduct?.category_id}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center">
-                            <span className={product.stock === 0 ? "text-destructive" : ""}>{product.stock}</span>
-                            {product.minStock !== undefined && product.stock <= product.minStock && (
+                            <span className={product.ammount_stock === 0 ? "text-destructive" : ""}>{product.ammount_stock}</span>
+                            {product.min_stock !== undefined && product.ammount_stock <= product.min_stock && (
                               <Badge variant="outline" className="ml-2 text-xs">
                                 Baixo
                               </Badge>
@@ -858,9 +821,9 @@ export default function ProductList() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          {product.promotionalPrice ? (
+                          {product.price_offer ? (
                             <div className="space-y-1">
-                              <div className="font-medium">{formatCurrency(product.promotionalPrice)}</div>
+                              <div className="font-medium">{formatCurrency(product.price_offer)}</div>
                               <div className="text-xs text-muted-foreground line-through">
                                 {formatCurrency(product.price)}
                               </div>
@@ -871,7 +834,7 @@ export default function ProductList() {
                         </TableCell>
                         <TableCell>
                           <Switch
-                            checked={product.status}
+                            checked={product.active}
                             aria-label="Toggle status"
                             onCheckedChange={(checked) => {
                               setProducts((prev) =>
@@ -901,20 +864,20 @@ export default function ProductList() {
                                 <DropdownMenuItem
                                   onClick={() => {
                                     setProducts((prev) =>
-                                      prev.map((p) => (p.id === product.id ? { ...p, featured: !p.featured } : p)),
+                                      prev.map((p) => (p.id === product.id ? { ...p, featured: !p.is_main } : p)),
                                     )
                                   }}
                                 >
-                                  {product.featured ? "Remover destaque" : "Destacar produto"}
+                                  {product.is_main ? "Remover destaque" : "Destacar produto"}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => {
                                     setProducts((prev) =>
-                                      prev.map((p) => (p.id === product.id ? { ...p, status: !p.status } : p)),
+                                      prev.map((p) => (p.id === product.id ? { ...p, status: !p.active } : p)),
                                     )
                                   }}
                                 >
-                                  {product.status ? "Desativar produto" : "Ativar produto"}
+                                  {product.active ? "Desativar produto" : "Ativar produto"}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -948,7 +911,7 @@ export default function ProductList() {
                       />
                       <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
                         <img
-                          src={product.images[0]?.url || "/placeholder.svg"}
+                          src={product.images?.url || "/placeholder.svg"}
                           alt={product.name}
                           className="w-full h-full object-cover"
                         />
@@ -958,9 +921,9 @@ export default function ProductList() {
                         <p className="text-sm text-muted-foreground">{product.sku}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant="outline">
-                            {CATEGORIES[product.category as keyof typeof CATEGORIES] || product.category}
+                            {product.category_id}
                           </Badge>
-                          {product.featured && <Badge variant="secondary">Destaque</Badge>}
+                          {product.is_main && <Badge variant="secondary">Destaque</Badge>}
                         </div>
                       </div>
                     </div>
@@ -968,14 +931,14 @@ export default function ProductList() {
                     <div className="flex justify-between items-center">
                       <div>
                         <div className="font-medium">
-                          {product.promotionalPrice
-                            ? formatCurrency(product.promotionalPrice)
+                          {product.price_offer
+                            ? formatCurrency(product.price_offer)
                             : formatCurrency(product.price)}
                         </div>
                         <div className="text-sm">
                           Estoque:
-                          <span className={product.stock === 0 ? "text-destructive ml-1" : "ml-1"}>
-                            {product.stock}
+                          <span className={product.ammount_stock === 0 ? "text-destructive ml-1" : "ml-1"}>
+                            {product.ammount_stock}
                           </span>
                         </div>
                       </div>
@@ -1002,20 +965,20 @@ export default function ProductList() {
                             <DropdownMenuItem
                               onClick={() => {
                                 setProducts((prev) =>
-                                  prev.map((p) => (p.id === product.id ? { ...p, status: !p.status } : p)),
+                                  prev.map((p) => (p.id === product.id ? { ...p, status: !p.active } : p)),
                                 )
                               }}
                             >
-                              {product.status ? "Desativar" : "Ativar"}
+                              {product.active ? "Desativar" : "Ativar"}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => {
                                 setProducts((prev) =>
-                                  prev.map((p) => (p.id === product.id ? { ...p, featured: !p.featured } : p)),
+                                  prev.map((p) => (p.id === product.id ? { ...p, featured: !p.active } : p)),
                                 )
                               }}
                             >
-                              {product.featured ? "Remover destaque" : "Destacar"}
+                              {product.is_main ? "Remover destaque" : "Destacar"}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
