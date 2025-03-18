@@ -23,7 +23,7 @@ export default function LayoutDashboard({
     children: React.ReactNode
 }) {
     return (
-        <html lang="en" suppressHydrationWarning={true}>
+        <html lang="pt" suppressHydrationWarning={true}>
             <body>
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                     <SettingsProvider>

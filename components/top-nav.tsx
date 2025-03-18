@@ -15,6 +15,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import React from "react"
+import { createClient } from "@/utils/supabase/server"
+import { signOutAction } from "@/app/actions"
 
 export function TopNav() {
   const pathname = usePathname()
@@ -70,7 +72,9 @@ export function TopNav() {
               <DropdownMenuItem asChild>
                 <Link href="/settings">Settings</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>Log out</DropdownMenuItem>
+              <DropdownMenuItem
+             onClick={signOutAction}
+              >  <Link href="/settings">Sign Out</Link></DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

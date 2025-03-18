@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Laptop, Smartphone, Tablet } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
+import {signOutAction} from "@/app/actions";
 
 const defaultAvatars = [
   "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/9439775.jpg-4JVJWOjPksd3DtnBYJXoWHA5lc1DU9.jpeg",
@@ -54,6 +55,7 @@ export default function SettingsPage() {
     toast.success("Privacy settings saved successfully")
   }
 
+  
   return (
     <div className="container mx-auto py-10">
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
@@ -271,8 +273,10 @@ export default function SettingsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="pt">Português </SelectItem>
                       <SelectItem value="es">Español</SelectItem>
                       <SelectItem value="fr">Français</SelectItem>
+
                       <SelectItem value="de">Deutsch</SelectItem>
                       <SelectItem value="zh">中文</SelectItem>
                     </SelectContent>
@@ -545,7 +549,7 @@ export default function SettingsPage() {
               </div>
               <div className="flex justify-between">
                 <Button variant="outline">Download Your Data</Button>
-                <Button variant="destructive">Delete My Account</Button>
+                <Button variant="destructive" onClick={signOutAction}>Sign Out</Button>
               </div>
             </CardContent>
             <CardFooter>
