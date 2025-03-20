@@ -1,4 +1,4 @@
-import CustomerRegistrationForm from "@/app/components/CreateConsummer";
+import CustomerRegistrationForm from "@/app/components/Consummer/CreateConsummer";
 
 export default function CustomerRegistrationPage() {
     return (

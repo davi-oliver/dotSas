@@ -77,3 +77,21 @@ export async function findProductById(id: string) {
     return product;
 
 }
+
+export async function createProduct (product: Product) {
+    
+        const supabase = await createClient()
+    
+        let { data, error } = await supabase
+        .from('product')
+        .insert([product])
+    
+        if (error) {
+            console.log(error)
+        }
+    
+        console.log({data})
+    
+        return data;
+    
+    }   

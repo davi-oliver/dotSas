@@ -21,52 +21,60 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
- 
+
 
 // Editor de texto rico
 import dynamic from "next/dynamic"
 import { Separator } from "@radix-ui/react-select"
+ 
+import { createClient } from "@/utils/supabase/client" 
+import { Toast, ToastAction } from "@/components/ui/toast"
+import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 const RichTextEditor = dynamic(() => import("@/app/components/rich-text-editor"), {
   ssr: false,
   loading: () => <div className="h-64 border rounded-md flex items-center justify-center">Carregando editor...</div>,
 })
 
-// Definição do esquema de validação
-const productSchema = z.object({
-  // Informações Básicas
-  name: z.string().min(3, { message: "Nome do produto é obrigatório" }),
-  description: z.string().optional(),
-  category: z.string({ required_error: "Selecione uma categoria" }),
-  brand: z.string().optional(),
-  sku: z.string().min(1, { message: "Código/SKU é obrigatório" }),
+    // Definição do esquema de validação
+    const productSchema = z.object({
+      // Informações Básicas
+      name: z.string().min(3, { message: "Nome do produto é obrigatório" }),
+      description: z.string().optional(),
+      category: z.string({ required_error: "Selecione uma categoria" }),
+      brand: z.string().optional(),
+      sku: z.string().min(1, { message: "Código/SKU é obrigatório" }),
+    
+      // Preço e Promoção
+      price: z.coerce.number().min(0.01, { message: "Preço deve ser maior que zero" }),
+      price_offer: z.coerce.number().optional(),
+      date_create_promotion: z.date().optional(),
+      date_end_promotion: z.date().optional(),
+      taxa: z.string().optional(),
+    
+      // Estoque e Logística
+      ammount_stock: z.coerce.number().int().min(0, { message: "Estoque não pode ser negativo" }),
+      min_stock: z.coerce.number().int().min(0).optional(),
+      barscode: z.string().optional(),
+      heigther: z.coerce.number().min(0).optional(),
+      height: z.coerce.number().min(0).optional(),
+      width: z.coerce.number().min(0).optional(),
+      depth: z.coerce.number().min(0).optional(),
+      days_produtions_create: z.coerce.number().int().min(0).optional(),
+    
+      // Outras Informações
+      active: z.boolean().default(true),
+      is_main: z.boolean().default(false),
+      tags: z.string().optional(),
+      seo: z.string().max(160, { message: "Descrição SEO deve ter no máximo 160 caracteres" }).optional(),
+    })
 
-  // Preço e Promoção
-  price: z.coerce.number().min(0.01, { message: "Preço deve ser maior que zero" }),
-  promotionalPrice: z.coerce.number().optional(),
-  promotionStart: z.date().optional(),
-  promotionEnd: z.date().optional(),
-  taxType: z.string().optional(),
 
-  // Estoque e Logística
-  stock: z.coerce.number().int().min(0, { message: "Estoque não pode ser negativo" }),
-  minStock: z.coerce.number().int().min(0).optional(),
-  barcode: z.string().optional(),
-  weight: z.coerce.number().min(0).optional(),
-  height: z.coerce.number().min(0).optional(),
-  width: z.coerce.number().min(0).optional(),
-  depth: z.coerce.number().min(0).optional(),
-  productionTime: z.coerce.number().int().min(0).optional(),
 
-  // Outras Informações
-  status: z.boolean().default(true),
-  featured: z.boolean().default(false),
-  tags: z.string().optional(),
-  seoDescription: z.string().max(160, { message: "Descrição SEO deve ter no máximo 160 caracteres" }).optional(),
-})
 
-type ProductFormValues = z.infer<typeof productSchema>
 
-export default function ProductRegistrationForm() {
+export default function ProductRegistrationForm(  ) {
+   type ProductFormValues = z.infer<typeof productSchema>
   const [activeTab, setActiveTab] = useState("basic")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [images, setImages] = useState<File[]>([])
@@ -80,6 +88,8 @@ export default function ProductRegistrationForm() {
       stock: string
     }[]
   >([])
+  const router = useRouter()
+  const { toast } = useToast()
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -87,32 +97,103 @@ export default function ProductRegistrationForm() {
       name: "",
       description: "",
       price: 0,
-      stock: 0,
-      status: true,
-      featured: false,
+      ammount_stock: 0,
+      active: true,
+      is_main: false,
     },
   })
 
-  function onSubmit(data: ProductFormValues) {
-    setIsSubmitting(true)
+ // Modifique a função onSubmit para usar o serviço de criação de produto:
+ async function onSubmit(formData: ProductFormValues) {
+  // handleSubmit(data)
+  setIsSubmitting(true)
+  console.log({ formData })
+  // Preparar os dados para o formato esperado pelo Supabase
+  const productData: Product = {
+    name: formData.name,
+    description: formData.description ?? "",
+    category_id: 1,
+    brand: formData.brand ?? "",
+    sku: formData.sku,
+    price: formData.price,
+    price_offer: formData.price_offer ?? 0,
+    date_create_promotion:  
+    formData.date_create_promotion ?? new Date(Date.now()),
+    date_end_promotion: formData.date_end_promotion ?? new Date(Date.now()) ,
+    taxa: Number(formData.taxa) ?? 0,
+    heigth: formData.height ?? 0,
+    link_product: "",
+   
+ 
+    ammount_stock: formData.ammount_stock,
+    min_stock: formData.min_stock ?? 0,
+    barscode: formData.barscode ?? "",
+    heigther: formData.heigther ?? 0,
+  
+    width: formData.width ?? 0,
+    depth: formData.depth ?? 0,
+    days_produtions_create: formData.days_produtions_create || 0,
+    active: formData.active,
+    is_main: formData.is_main,
+    tags: formData.tags ? formData.tags.split(",").map(tag => tag.trim()) : [],
+    seo: formData.seo ?? "",
+    // : videoUrl,
+    // variants: variants.map((v) => ({
+    //   attribute: v.attribute,
+    //   value: v.value,
+    //   price: Number.parseFloat(v.price) || 0,
+    //   stock: Number.parseInt(v.stock) || 0,
+    // })),
+  } 
+  console.log({productData})
+  const supabase = createClient()
 
-    // Simulando envio para API
-    console.log("Dados do formulário:", data)
-    console.log("Imagens:", images)
-    console.log("URL do vídeo:", videoUrl)
-    console.log("Variantes:", variants)
+    
+  let { data, error } = await supabase
+  .from('product')
+  .insert([productData])
 
-    // Simulando tempo de processamento
-    setTimeout(() => {
-      setIsSubmitting(false)
-      alert("Produto cadastrado com sucesso!")
-      form.reset()
-      setImages([])
-      setVideoUrl("")
-      setVariants([])
-      setActiveTab("basic")
-    }, 1500)
-  }
+  if (error) {
+    console.log(error) 
+      
+    toast({
+      variant: "destructive",
+      title: "Uh oh! Something went wrong.",
+      description: "There was a problem with your request.",
+      action: <ToastAction altText="Try again">Try again</ToastAction>,
+    })
+
+    return ;
+
+  } 
+  toast({
+    variant: "default",
+    className: "bg-success/50",
+    title: "Finalizado",
+    description: "Seu produto foi cadastrado com sucesso.",
+    action: <ToastAction altText="Ok">ok</ToastAction>,
+  })
+
+  router.push("/products")
+  setIsSubmitting(false)
+
+  console.log({data})
+  return ;
+   
+  
+}
+
+  // Simulando tempo de processamento
+  //   setTimeout(() => {
+  //     setIsSubmitting(false)
+  //     alert("Produto cadastrado com sucesso!")
+  //     form.reset()
+  //     setImages([])
+  //     setVideoUrl("")
+  //     setVariants([])
+  //     setActiveTab("basic")
+  //   }, 1500)
+  // }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -220,7 +301,7 @@ export default function ProductRegistrationForm() {
                       <FormItem>
                         <FormLabel>Marca</FormLabel>
                         <FormControl>
-                          <Input placeholder="Marca do produto" {...field} />
+                          <Input id='brand' placeholder="Marca do produto" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -282,7 +363,7 @@ export default function ProductRegistrationForm() {
 
                   <FormField
                     control={form.control}
-                    name="promotionalPrice"
+                    name="price_offer"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Preço Promocional</FormLabel>
@@ -296,7 +377,7 @@ export default function ProductRegistrationForm() {
                               className="pl-10"
                               placeholder="0,00"
                               {...field}
-                              value={field.value || ""}
+                              value={typeof field.value === "string" || typeof field.value === "number" ? field.value : ""}
                             />
                           </div>
                         </FormControl>
@@ -309,7 +390,7 @@ export default function ProductRegistrationForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="promotionStart"
+                    name="date_create_promotion"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel>Data de Início da Promoção</FormLabel>
@@ -346,7 +427,7 @@ export default function ProductRegistrationForm() {
 
                   <FormField
                     control={form.control}
-                    name="promotionEnd"
+                    name="date_end_promotion"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel>Data de Fim da Promoção</FormLabel>
@@ -371,7 +452,7 @@ export default function ProductRegistrationForm() {
                               mode="single"
                               selected={field.value}
                               onSelect={field.onChange}
-                                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                               initialFocus
                             />
                           </PopoverContent>
@@ -384,7 +465,7 @@ export default function ProductRegistrationForm() {
 
                 <FormField
                   control={form.control}
-                  name="taxType"
+                  name="taxa"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Tipo de Taxa/Imposto</FormLabel>
@@ -430,7 +511,7 @@ export default function ProductRegistrationForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="stock"
+                    name="ammount_stock"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Quantidade em Estoque *</FormLabel>
@@ -444,7 +525,7 @@ export default function ProductRegistrationForm() {
 
                   <FormField
                     control={form.control}
-                    name="minStock"
+                    name="min_stock"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Estoque Mínimo</FormLabel>
@@ -455,7 +536,7 @@ export default function ProductRegistrationForm() {
                             step="1"
                             placeholder="Quantidade mínima"
                             {...field}
-                            value={field.value || ""}
+                            value={typeof field.value === "string" || typeof field.value === "number" ? field.value : ""}
                           />
                         </FormControl>
                         <FormDescription>Quantidade para alerta de reposição</FormDescription>
@@ -467,7 +548,7 @@ export default function ProductRegistrationForm() {
 
                 <FormField
                   control={form.control}
-                  name="barcode"
+                  name="barscode"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Código de Barras (EAN/GTIN)</FormLabel>
@@ -482,7 +563,7 @@ export default function ProductRegistrationForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="weight"
+                    name="heigther"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Peso (kg)</FormLabel>
@@ -493,7 +574,8 @@ export default function ProductRegistrationForm() {
                             step="0.001"
                             placeholder="Peso em kg"
                             {...field}
-                            value={field.value || ""}
+                            value={typeof field.value === "string" || typeof field.value === "number" ? field.value : ""}
+
                           />
                         </FormControl>
                         <FormMessage />
@@ -503,7 +585,7 @@ export default function ProductRegistrationForm() {
 
                   <FormField
                     control={form.control}
-                    name="productionTime"
+                    name="days_produtions_create"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Prazo de Produção/Manuseio (dias)</FormLabel>
@@ -799,7 +881,7 @@ export default function ProductRegistrationForm() {
                 <div className="flex items-center space-x-2">
                   <FormField
                     control={form.control}
-                    name="status"
+                    name="active"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                         <FormControl>
@@ -817,7 +899,7 @@ export default function ProductRegistrationForm() {
                 <div className="flex items-center space-x-2">
                   <FormField
                     control={form.control}
-                    name="featured"
+                    name="is_main"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                         <FormControl>
@@ -851,7 +933,7 @@ export default function ProductRegistrationForm() {
 
                 <FormField
                   control={form.control}
-                  name="seoDescription"
+                  name="seo"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Descrição para SEO</FormLabel>
@@ -873,16 +955,33 @@ export default function ProductRegistrationForm() {
                 <Button variant="outline" onClick={() => setActiveTab("variants")}>
                   Anterior
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    "Salvar Produto"
-                  )}
-                </Button>
+
+                <Button type="submit" disabled={isSubmitting}   onClick={() => {
+                 try {
+                  const forms = productSchema.parse(form.getValues())
+                  console.log({forms});
+
+                  onSubmit(forms)
+                 } catch (error) {
+                  toast({
+                    variant: "destructive",
+                    title: "Ops! Campos inválidos",
+                    description: "Verifique os campos obrigattórios com * e tente novamente.",
+                    action: <ToastAction altText="Try again">Fechar</ToastAction>,
+                  })
+
+                 }
+                }}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              "Salvar Produto"
+            )}
+          </Button>
+              
               </CardFooter>
             </Card>
           </TabsContent>
@@ -891,4 +990,5 @@ export default function ProductRegistrationForm() {
     </Form>
   )
 }
+
 
