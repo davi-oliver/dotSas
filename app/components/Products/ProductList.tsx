@@ -61,166 +61,6 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 
-
-// // Dados de exemplo
-// const EXAMPLE_PRODUCTS: Product[] = [
-//   {
-//     id: "PROD-001",
-//     name: "Smartphone Galaxy S23",
-//     sku: "SAMS-S23-BLK",
-//     description: "Smartphone Samsung Galaxy S23 com 256GB de armazenamento",
-//     price: 4999.9,
-//     promotionalPrice: 4499.9,
-//     category: "eletronicos",
-//     brand: "Samsung",
-//     stock: 15,
-//     minStock: 5,
-//     status: true,
-//     featured: true,
-//     images: [
-//       { id: "IMG-001", url: "/placeholder.svg?height=80&width=80", isMain: true },
-//       { id: "IMG-002", url: "/placeholder.svg?height=80&width=80", isMain: false },
-//     ],
-//     variants: [
-//       { id: "VAR-001", attribute: "cor", value: "Preto", price: 4999.9, stock: 10 },
-//       { id: "VAR-002", attribute: "cor", value: "Branco", price: 4999.9, stock: 5 },
-//     ],
-//     createdAt: new Date(2023, 5, 15),
-//     updatedAt: new Date(2023, 6, 10),
-//   },
-//   {
-//     id: "PROD-002",
-//     name: 'Notebook Ultrabook 14"',
-//     sku: "ULTRA-14-SLV",
-//     description: "Notebook ultrafino com processador de última geração",
-//     price: 5999.0,
-//     category_id: 1,
-//     brand: "Dell",
-    
-   
-    
-//     featured: true,
-//     images: [{ id: "IMG-003", url: "/placeholder.svg?height=80&width=80", isMain: true }],
-//     createdAt: new Date(2023, 4, 20),
-//     updatedAt: new Date(2023, 4, 20),
-//   },
-//   {
-//     id: "PROD-003",
-//     name: "Tênis Esportivo",
-//     sku: "TENIS-ESP-001",
-//     description: "Tênis para corrida com tecnologia de amortecimento",
-//     price: 299.9,
-//     promotionalPrice: 249.9,
-//     category: "vestuario",
-//     brand: "Nike",
-//     stock: 25,
-//     minStock: 10,
-//     status: true,
-//     featured: false,
-//     images: [
-//       { id: "IMG-004", url: "/placeholder.svg?height=80&width=80", isMain: true },
-//       { id: "IMG-005", url: "/placeholder.svg?height=80&width=80", isMain: false },
-//       { id: "IMG-006", url: "/placeholder.svg?height=80&width=80", isMain: false },
-//     ],
-//     variants: [
-//       { id: "VAR-003", attribute: "tamanho", value: "39", price: 299.9, stock: 5 },
-//       { id: "VAR-004", attribute: "tamanho", value: "40", price: 299.9, stock: 10 },
-//       { id: "VAR-005", attribute: "tamanho", value: "41", price: 299.9, stock: 10 },
-//     ],
-//     createdAt: new Date(2023, 3, 10),
-//     updatedAt: new Date(2023, 5, 5),
-//   },
-//   {
-//     id: "PROD-004",
-//     name: "Cafeteira Elétrica",
-//     sku: "CAFE-ELET-001",
-//     description: "Cafeteira elétrica com capacidade para 12 xícaras",
-//     price: 249.9,
-//     category: "eletrodomesticos",
-//     brand: "Philips",
-//     stock: 12,
-//     status: true,
-//     featured: false,
-//     images: [{ id: "IMG-007", url: "/placeholder.svg?height=80&width=80", isMain: true }],
-//     createdAt: new Date(2023, 2, 15),
-//     updatedAt: new Date(2023, 2, 15),
-//   },
-//   {
-//     id: "PROD-005",
-//     name: "Fones de Ouvido Bluetooth",
-//     sku: "FONE-BT-001",
-//     description: "Fones de ouvido sem fio com cancelamento de ruído",
-//     price: 349.9,
-//     promotionalPrice: 299.9,
-//     category: "eletronicos",
-//     brand: "JBL",
-//     stock: 0,
-//     minStock: 5,
-//     status: false,
-//     featured: false,
-//     images: [{ id: "IMG-008", url: "/placeholder.svg?height=80&width=80", isMain: true }],
-//     createdAt: new Date(2023, 1, 20),
-//     updatedAt: new Date(2023, 3, 25),
-//   },
-//   {
-//     id: "PROD-006",
-//     name: "Conjunto de Panelas",
-//     sku: "PANEL-CONJ-001",
-//     description: "Conjunto com 5 panelas antiaderentes",
-//     price: 499.9,
-//     category: "utensilios",
-//     brand: "Tramontina",
-//     stock: 7,
-//     minStock: 3,
-//     status: true,
-//     featured: false,
-//     images: [{ id: "IMG-009", url: "/placeholder.svg?height=80&width=80", isMain: true }],
-//     createdAt: new Date(2023, 0, 10),
-//     updatedAt: new Date(2023, 0, 10),
-//   },
-//   {
-//     id: "PROD-007",
-//     name: 'Smart TV 43"',
-//     sku: "TV-SMART-43",
-//     description: "Smart TV LED 43 polegadas com resolução 4K",
-//     price: 2199.9,
-//     promotionalPrice: 1899.9,
-//     category: "eletronicos",
-//     brand: "LG",
-//     stock: 10,
-//     minStock: 2,
-//     status: true,
-//     featured: true,
-//     images: [{ id: "IMG-010", url: "/placeholder.svg?height=80&width=80", isMain: true }],
-//     createdAt: new Date(2022, 11, 5),
-//     updatedAt: new Date(2023, 1, 15),
-//   },
-//   {
-//     id: "PROD-008",
-//     name: "Cadeira de Escritório",
-//     sku: "CAD-ESC-001",
-//     description: "Cadeira ergonômica para escritório",
-//     price: 799.9,
-//     category: "moveis",
-//     brand: "Multilaser",
-//     stock: 4,
-//     status: true,
-//     featured: false,
-//     images: [{ id: "IMG-011", url: "/placeholder.svg?height=80&width=80", isMain: true }],
-//     createdAt: new Date(2022, 10, 20),
-//     updatedAt: new Date(2022, 10, 20),
-//   },
-// ]
-
-// // Mapeamento de categorias
-// const CATEGORIES = {
-//   eletronicos: "Eletrônicos",
-//   vestuario: "Vestuário",
-//   eletrodomesticos: "Eletrodomésticos",
-//   utensilios: "Utensílios",
-//   moveis: "Móveis",
-// }
-
 // Componente principal
 export default function ProductList({ items, categories }: { items: Product[], categories: any[] }) {
   const [products, setProducts] = useState<Product[]>(items)
@@ -333,7 +173,7 @@ export default function ProductList({ items, categories }: { items: Product[], c
     if (selectedItems.length === paginatedProducts.length) {
       setSelectedItems([])
     } else {
-      setSelectedItems(paginatedProducts.map((product) => product.id))
+      setSelectedItems(paginatedProducts.map((product) => product.id).filter((id): id is number => id !== undefined))
     }
   }
 
@@ -346,7 +186,7 @@ export default function ProductList({ items, categories }: { items: Product[], c
 
   // Simular exclusão em massa
   const handleBulkDelete = () => {
-    setProducts((prev) => prev.filter((product) => !selectedItems.includes(product.id)))
+    setProducts((prev) => prev.filter((product) => !selectedItems.filter((id) => id !== undefined).includes(product.id!)))
     setSelectedItems([])
     setIsDeleteDialogOpen(false)
   }
@@ -409,7 +249,7 @@ export default function ProductList({ items, categories }: { items: Product[], c
     return (
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-6">
-          <div className="sm:w-1/3">
+          {/* <div className="sm:w-1/3">
             <div className="aspect-square rounded-md overflow-hidden border">
               <img
                 src={selectedProduct.images?.url || "/placeholder.svg"}
@@ -424,7 +264,7 @@ export default function ProductList({ items, categories }: { items: Product[], c
                       className="w-full h-full object-cover"
                     />
                   </div>
-          </div>
+          </div> */}
 
           <div className="sm:w-2/3 space-y-4">
             <div className="flex justify-between items-start">
@@ -791,8 +631,8 @@ export default function ProductList({ items, categories }: { items: Product[], c
                       <TableRow key={product.id}>
                         <TableCell>
                           <Checkbox
-                            checked={selectedItems.includes(product.id)}
-                            onCheckedChange={() => toggleItemSelection(product.id)}
+                            checked={product.id !== undefined && selectedItems.includes(product.id)}
+                            onCheckedChange={() => product.id !== undefined && toggleItemSelection(product.id)}
                             aria-label={`Selecionar ${product.name}`}
                           />
                         </TableCell>
@@ -905,8 +745,8 @@ export default function ProductList({ items, categories }: { items: Product[], c
                   <div key={product.id} className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-start gap-3">
                       <Checkbox
-                        checked={selectedItems.includes(product.id)}
-                        onCheckedChange={() => toggleItemSelection(product.id)}
+                        checked={product.id !== undefined && selectedItems.includes(product.id)}
+                        onCheckedChange={() => product.id !== undefined && toggleItemSelection(product.id)}
                         aria-label={`Selecionar ${product.name}`}
                       />
                       <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
@@ -948,7 +788,7 @@ export default function ProductList({ items, categories }: { items: Product[], c
                           <ProductDetailsDrawer />
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => {
-                          handleClickEdit(product.id)
+                          {product.id !== undefined && handleClickEdit(product.id)}
                         }}>
                           <Edit className="h-4 w-4" />
                           <span className="sr-only">Editar</span>

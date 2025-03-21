@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { boolean, z } from "zod"
@@ -41,7 +41,7 @@ const RichTextEditor = dynamic(() => import("@/app/components/rich-text-editor")
       // Informações Básicas
       name: z.string().min(3, { message: "Nome do produto é obrigatório" }),
       description: z.string().optional(),
-      category: z.string({ required_error: "Selecione uma categoria" }),
+      category_id: z.string({ required_error: "Selecione uma categoria" }),
       brand: z.string().optional(),
       sku: z.string().min(1, { message: "Código/SKU é obrigatório" }),
     
@@ -72,8 +72,7 @@ const RichTextEditor = dynamic(() => import("@/app/components/rich-text-editor")
 
 
 
-
-export default function ProductRegistrationForm(  ) {
+    export default function ProductRegistrationForm({ product_id }: { product_id?: string }) {
    type ProductFormValues = z.infer<typeof productSchema>
   const [activeTab, setActiveTab] = useState("basic")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -102,6 +101,62 @@ export default function ProductRegistrationForm(  ) {
       is_main: false,
     },
   })
+ 
+
+  async function fetchProductData() {
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from("product")
+      .select("*")
+      .eq("id", product_id)
+      .single()
+
+    if (error) {
+      console.error("Error fetching product data:", error)
+      return null
+    }
+    console.log({data})
+
+    return data
+  }
+
+  useEffect(() => {
+    console.log({product_id})
+    if(!product_id) return;
+    fetchProductData().then((productData) => {
+      if (productData) {
+        form.reset({
+          name: productData.name,
+          description: productData.description,
+          category_id: productData.category_id ? productData.category_id.toString() : "",
+          brand: productData.brand,
+          sku: productData.sku,
+          price: productData.price,
+          price_offer: productData.price_offer,
+          date_create_promotion: productData.date_create_promotion
+            ? new Date(productData.date_create_promotion)
+            : undefined,
+          date_end_promotion: productData.date_end_promotion
+            ? new Date(productData.date_end_promotion)
+            : undefined,
+          taxa: productData.taxa.toString(),
+          ammount_stock: productData.ammount_stock,
+          min_stock: productData.min_stock,
+          barscode: productData.barscode,
+          heigther: productData.heigther,
+          height: productData.height,
+          width: productData.width,
+          depth: productData.depth,
+          days_produtions_create: productData.days_produtions_create,
+          active: productData.active,
+          is_main: productData.is_main,
+          tags: productData.tags ? productData.tags.join(", ") : "",
+          seo: productData.seo,
+        })
+      }
+    })
+  }, [])
+  
 
  // Modifique a função onSubmit para usar o serviço de criação de produto:
  async function onSubmit(formData: ProductFormValues) {
@@ -270,7 +325,7 @@ export default function ProductRegistrationForm(  ) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="category"
+                    name="category_id"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Categoria *</FormLabel>
@@ -281,12 +336,12 @@ export default function ProductRegistrationForm(  ) {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="eletronicos">Eletrônicos</SelectItem>
-                            <SelectItem value="vestuario">Vestuário</SelectItem>
-                            <SelectItem value="alimentos">Alimentos</SelectItem>
-                            <SelectItem value="moveis">Móveis</SelectItem>
-                            <SelectItem value="livros">Livros</SelectItem>
-                            <SelectItem value="outros">Outros</SelectItem>
+                            <SelectItem value="1">Eletrônicos</SelectItem>
+                            <SelectItem value="2">Vestuário</SelectItem>
+                            <SelectItem value="3">Alimentos</SelectItem>
+                            <SelectItem value="4">Móveis</SelectItem>
+                            <SelectItem value="5">Livros</SelectItem>
+                            <SelectItem value="6">Outros</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
