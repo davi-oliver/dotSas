@@ -27,21 +27,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Loader2, MoreHorizontal, Plus, Search, Shield, User } from "lucide-react"
+import { Member } from "@/types/organization"
 
 interface OrganizationMembersProps {
   refreshTrigger?: number
   onUpdate: () => void
 }
 
-interface Member {
-  id: string
-  name: string
-  email: string
-  role: "owner" | "admin" | "member" | "guest"
-  avatar?: string
-  status: "active" | "invited" | "suspended"
-  joinedAt: string
-}
+
 
 export default function OrganizationMembers({ refreshTrigger, onUpdate }: OrganizationMembersProps) {
   const [isLoading, setIsLoading] = useState(true)
